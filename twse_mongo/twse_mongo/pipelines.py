@@ -9,8 +9,8 @@ from twse_mongo import settings
 from twse_mongo.items import TwseMongoItem
 from pymongo import MongoClient
 
-class TwseMongoPipeline(object):
-    def __init__(self):
+class TwseMongoPipeline(object):  
+    def __init__(self):    #連線資料庫，資料庫相關設定值放在settings.py
         self.client = MongoClient(settings.MONGO_HOST, 27017)
         self.db = self.client[settings.MONGO_DB]
         self.collection = self.db[settings.MONGO_COLLETION]
@@ -19,5 +19,5 @@ class TwseMongoPipeline(object):
         if item.__class__ == TwseMongoItem:   #將不同Item插入不同的資料庫
             if self.collection.find({"date": item['date'], "stockno": item['stockno']} ).count() == 0:  #找尋資料是否已經在Mongo
                 element={'date':item['date'], 'stockno':item['stockno'], 'shares':item['shares'], 'amount':item['amount'], 'open':item['open'], 'close':item['close'], 'high':item['high'], 'low':item['low'], 'diff':item['diff'], 'turnover':item['turnover']};  #一天的股價與成交量
-                self.collection.insert_one(element)  #插入資料到資料庫
+                self.collection.insert_one(element)  #將資料插入到資料庫
             return item

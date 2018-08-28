@@ -29,17 +29,17 @@ class TwseSpider(scrapy.Spider):
                     else:
                         s = str(y) + str(m) +'01'
                     dates.append(s)
-        stockno_list = ['2892','2330']
+        stockno_list = ['2892','2330']   #要蒐集的股票代碼，可以是串列
         for stockno in stockno_list:
             for date in dates:
                 url = 'http://www.twse.com.tw/exchangeReport/STOCK_DAY?date=%s&stockNo=%s' % ( date, stockno)  #產生證交所所需要的股票與日期的網址
-                self.start_urls.append(url)
+                self.start_urls.append(url)  #加入start_urls，scrapy會自動抓取start_urls的每一個網址
     
     def transform_date(self, date):  #民國轉西元
         y, m, d = date.split('/')
         return str(int(y)+1911) + '/' + m  + '/' + d
     
-    def transform_data(self, data):
+    def transform_data(self, data):   #資料格式轉換
         data[0] = datetime.datetime.strptime(self.transform_date(data[0]), '%Y/%m/%d')
         data[1] = int(data[1].replace(',', ''))#把千進位的逗點去除
         data[2] = int(data[2].replace(',', ''))
@@ -51,14 +51,14 @@ class TwseSpider(scrapy.Spider):
         data[8] = int(data[8].replace(',', ''))
         return data
 
-    def transform(self, data):   #進行資料格式轉換
+    def transform(self, data):   #取出data的每一列資料進行資料格式轉換
         return [self.transform_data(d) for d in data]
     
     def parse(self, response):
         data_src = json.loads(response.body_as_unicode()) #將json轉換成python的字典結構
         stockno = response.url[-4:]  #取出股票代碼
-        item = TwseMysqlItem()  #定義在items.py
-        data = self.transform(data_src['data'])
+        item = TwseMysqlItem()  #TwseMysqlItem定義在items.py
+        data = self.transform(data_src['data'])   #字典data_src的鍵值data對應到整個月股價與成交量，使用transform進行資料格式轉換
         for d in data:
             item['date'] = d[0]         #資料與item結合，會傳到pipeline進行處理
             item['stockno'] = stockno

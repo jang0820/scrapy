@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# 登入zerojudge，讀取其他使用者AC的題數儲存到MongoDB
 import scrapy
 from zj.items import ZjItem
 import os
